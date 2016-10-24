@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     widget->resize(size);
     widget->move(position);
     widget->show();
+    widget->startThread();
 
     return app.exec();
 }

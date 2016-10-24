@@ -6,8 +6,10 @@
 #pragma once
 
 #include <memory>
+#include <QtCore/QMutex>
 #include <QtCore/QObject>
-#include "opengl.h"
+#include <QtCore/QWaitCondition>
+#include "opengl_widget.h"
 
 namespace kuu
 {
@@ -26,12 +28,23 @@ public:
     using Ptr = std::shared_ptr<RendererObject>;
 
     // Constructs the renderer object.
-    RendererObject();
+    RendererObject(Widget::WeakPtr widget);
 
+    void exit();
+
+    void lockRenderer();
+    void unlockRenderer();
+
+    QMutex* requestWaitMutex() const;
+    QWaitCondition* requestWaitCondition() const;
 
 public slots:
     // Render a frame
-    void renderer();
+    void render();
+
+signals:
+    // Request the context is moved into this thread.
+    void requestContext();
 
 private:
     struct Data;

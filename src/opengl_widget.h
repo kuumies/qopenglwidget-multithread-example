@@ -29,14 +29,32 @@ class Widget
     Q_OBJECT
 
 public:
-    // Defines a shared pointer of widget.
-    using Ptr = std::shared_ptr<Widget>;
+    // Defines a shared pointers of widget.
+    using Ptr     = std::shared_ptr<Widget>;
+    using WeakPtr = std::weak_ptr<Widget>;
 
     // Constructs the widget.
     Widget();
 
+    // Starts the rendering thread.
+    void startThread();
+
+    // Stops the rendering thread.
+    void stopThread();
+signals:
+    // Request renderer to draw the next frame.
+    void renderRequest();
+
+private slots:
+    void onWidgetAboutToCompose();
+    void onWidgetFrameSwapped();
+    void onWidgetAboutToResize();
+    void onWidgetResized();
+    void onRendererRequestContext();
+
 protected:
     void paintEvent(QPaintEvent* e);
+    void closeEvent(QCloseEvent* e);
 
 private:
     struct Data;
