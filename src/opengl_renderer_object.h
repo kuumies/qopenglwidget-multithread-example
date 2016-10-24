@@ -1,18 +1,13 @@
 /* ---------------------------------------------------------------- *
    Author: Kuumies <kuumies@gmail.com>
-   Desc:   Definition of kuu::opengl::Widget class.
+   Desc:   Definition of kuu::opengl::RendererObject class.
  * ---------------------------------------------------------------- */
 
 #pragma once
 
 #include <memory>
-#ifdef _WIN32
-    #include "opengl.h"
-    #include <QtWidgets/QOpenGLWidget>
-#else
-    #include <QtWidgets/QOpenGLWidget>
-    #include "opengl.h"
-#endif
+#include <QtCore/QObject>
+#include "opengl.h"
 
 namespace kuu
 {
@@ -20,23 +15,23 @@ namespace opengl
 {
 
 /* ---------------------------------------------------------------- *
-   An OpenGL widget.
+   A renderer object.
  * ---------------------------------------------------------------- */
-class Widget
-    : public QOpenGLWidget
-    , public std::enable_shared_from_this<Widget>
+class RendererObject : public QObject
 {
     Q_OBJECT
 
 public:
-    // Defines a shared pointer of widget.
-    using Ptr = std::shared_ptr<Widget>;
+    // Defines a shared pointer of renderer object.
+    using Ptr = std::shared_ptr<RendererObject>;
 
-    // Constructs the widget.
-    Widget();
+    // Constructs the renderer object.
+    RendererObject();
 
-protected:
-    void paintEvent(QPaintEvent* e);
+
+public slots:
+    // Render a frame
+    void renderer();
 
 private:
     struct Data;

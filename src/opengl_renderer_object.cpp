@@ -1,9 +1,8 @@
 /* ---------------------------------------------------------------- *
    Author: Kuumies <kuumies@gmail.com>
-   Desc:   Implementation of kuu::opengl::Widget class.
+   Desc:   Implementation of kuu::opengl::RendererObject class.
  * ---------------------------------------------------------------- */
 
-#include "opengl_widget.h"
 #include "opengl_renderer_object.h"
 
 namespace kuu
@@ -12,25 +11,26 @@ namespace opengl
 {
 
 /* ---------------------------------------------------------------- *
-   The data of the widget.
+   The data of the renderer object.
  * ---------------------------------------------------------------- */
-struct Widget::Data
+struct RendererObject::Data
 {
-    RendererObject::Ptr renderer;
 };
 
 /* ---------------------------------------------------------------- *
-   Constructs the widget.
+   Constructs the renderer object.
  * -----------------------------------------------------------------*/
-Widget::Widget()
+RendererObject::RendererObject()
     : d(std::make_shared<Data>())
 {}
 
 /* ---------------------------------------------------------------- *
-   Paint event needs to be overridden for rendering to work.
+   Renderers a frame.
  * -----------------------------------------------------------------*/
-void Widget::paintEvent(QPaintEvent* e)
-{}
+void RendererObject::renderer()
+{
+
+}
 
 } // namespace opengl
 } // namespace kuu

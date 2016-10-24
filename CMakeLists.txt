@@ -45,13 +45,19 @@ include_directories(${GLM_INCLUDE_DIR})
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-QT5_ADD_RESOURCES(RCC_RESOURCES
+qt5_wrap_cpp(MOC_SOURCE
+    src/opengl_renderer_object.h
+    src/opengl_widget.h
+)
+
+qt5_add_resources(RCC_RESOURCES
     resource/qopenglwidget-multithread-example.qrc
 )
 
 set(SOURCE
     src/main.cpp
     src/opengl.h
+    src/opengl_renderer_object.cpp
     src/opengl_widget.cpp
 )
 
@@ -65,7 +71,7 @@ if (APPLE)
     set(CMAKE_INSTALL_RPATH "${CMAKE_PREFIX_PATH}/lib")
 endif(APPLE)
 
-add_executable(${PROJECT_NAME} ${SOURCE} ${RCC_RESOURCES})
+add_executable(${PROJECT_NAME} ${SOURCE} ${RCC_RESOURCES} ${MOC_SOURCE})
 target_link_libraries(${PROJECT_NAME}
     Qt5::Widgets
     Qt5::OpenGL

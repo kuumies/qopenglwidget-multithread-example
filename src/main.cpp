@@ -5,7 +5,9 @@
  * -----------------------------------------------------------------*/
 
 #include "src/opengl_widget.h"
+#include <iostream>
 #include <QtGui/QIcon>
+#include <QtGui/QOpenGLContext>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDesktopWidget>
 
@@ -15,6 +17,18 @@ int main(int argc, char *argv[])
 
     using namespace kuu;
     using namespace kuu::opengl;
+
+    // Check that the threaded OpenGL is supported.
+    if (!QOpenGLContext::supportsThreadedOpenGL())
+    {
+        std::cerr << "Threaded OpenGL is not supported" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    // Set the wanted surface format.
+    QSurfaceFormat format;
+    format.setDepthBufferSize(16);
+    QSurfaceFormat::setDefaultFormat(format);
 
     // Calculate the position of the widget. The widget should be
     // located so that the center is also at the center of desktop.
