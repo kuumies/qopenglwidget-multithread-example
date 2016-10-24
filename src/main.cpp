@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
     // Set the wanted surface format.
     QSurfaceFormat format;
     format.setDepthBufferSize(16);
+    format.setVersion(3, 3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
 
     // Calculate the position of the widget. The widget should be
