@@ -70,6 +70,7 @@ void Widget::stopThread()
     if (!d->thread)
         return;
 
+    d->renderer->stop();
     if (d->thread->isRunning())
     {
         d->thread->quit();
@@ -77,7 +78,6 @@ void Widget::stopThread()
     }
     d->thread.reset();
 
-    d->renderer->exit();
     d->renderer.reset();
 }
 
@@ -107,7 +107,8 @@ void Widget::onWidgetFrameSwapped()
 }
 
 /* ---------------------------------------------------------------- *
-
+   Stop the rendering when user starts to resize the widget. This
+   seems to block the rendering for maybe too long...
  * -----------------------------------------------------------------*/
 void Widget::onWidgetAboutToResize()
 {
@@ -116,7 +117,7 @@ void Widget::onWidgetAboutToResize()
 }
 
 /* ---------------------------------------------------------------- *
-
+   Restart the rendering when user has finished resizing the widget.
  * -----------------------------------------------------------------*/
 void Widget::onWidgetResized()
 {
@@ -125,7 +126,7 @@ void Widget::onWidgetResized()
 }
 
 /* ---------------------------------------------------------------- *
-
+   Move the OpenGL context into renderer thread.
  * -----------------------------------------------------------------*/
 void Widget::onRendererRequestContext()
 {
@@ -142,6 +143,9 @@ void Widget::onRendererRequestContext()
 void Widget::paintEvent(QPaintEvent* /*e*/)
 {}
 
+/* ---------------------------------------------------------------- *
+   Stop the thread during exit.
+ * -----------------------------------------------------------------*/
 void Widget::closeEvent(QCloseEvent* /*e*/)
 {
     stopThread();

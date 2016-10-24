@@ -41,6 +41,7 @@ public:
 
     // Stops the rendering thread.
     void stopThread();
+
 signals:
     // Request renderer to draw the next frame.
     void renderRequest();

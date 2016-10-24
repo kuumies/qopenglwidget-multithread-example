@@ -18,6 +18,9 @@ namespace opengl
 
 /* ---------------------------------------------------------------- *
    A renderer object.
+
+   TODO: find a better way to do the synchronization with the
+         widget. Now it is super ugly, super hackish looking.
  * ---------------------------------------------------------------- */
 class RendererObject : public QObject
 {
@@ -30,12 +33,17 @@ public:
     // Constructs the renderer object.
     RendererObject(Widget::WeakPtr widget);
 
-    void exit();
+    // Stops the rendering
+    void stop();
 
+    // Locks the rendering mutex
     void lockRenderer();
+    // Unlocks the rendering mutex
     void unlockRenderer();
 
+    // Returns the request context mutex
     QMutex* requestWaitMutex() const;
+    // Returns wait condition of the request context mutex
     QWaitCondition* requestWaitCondition() const;
 
 public slots:

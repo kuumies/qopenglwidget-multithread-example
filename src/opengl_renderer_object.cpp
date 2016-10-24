@@ -77,16 +77,16 @@ RendererObject::RendererObject(Widget::WeakPtr widget)
 {}
 
 /* ---------------------------------------------------------------- *
-
+   Stops the rendering
  * -----------------------------------------------------------------*/
-void RendererObject::exit()
+void RendererObject::stop()
 {
     d->exiting = true;
     d->requestWaitCondition.wakeAll();
 }
 
 /* ---------------------------------------------------------------- *
-
+   Locks the rendering mutex
  * -----------------------------------------------------------------*/
 void RendererObject::lockRenderer()
 {
@@ -94,7 +94,7 @@ void RendererObject::lockRenderer()
 }
 
 /* ---------------------------------------------------------------- *
-
+   Unlocks the rendering mutex
  * -----------------------------------------------------------------*/
 void RendererObject::unlockRenderer()
 {
@@ -102,7 +102,7 @@ void RendererObject::unlockRenderer()
 }
 
 /* ---------------------------------------------------------------- *
-
+   Returns the request context mutex
  * -----------------------------------------------------------------*/
 QMutex* RendererObject::requestWaitMutex() const
 {
@@ -110,7 +110,7 @@ QMutex* RendererObject::requestWaitMutex() const
 }
 
 /* ---------------------------------------------------------------- *
-
+   Returns wait condition of the request context mutex
  * -----------------------------------------------------------------*/
 QWaitCondition* RendererObject::requestWaitCondition() const
 {
