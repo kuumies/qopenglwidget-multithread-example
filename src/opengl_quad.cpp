@@ -98,6 +98,14 @@ struct Quad::Data
         };
 
         // -----------------------------------------------------------
+        // Create vertex array object.
+
+        glGenVertexArrays(1, &vao);
+        if (vao == 0)
+            std::cerr << "Failed to generate VAO" << std::endl;
+        glBindVertexArray(vao);
+
+        // -----------------------------------------------------------
         // Create the OpenGL vertex buffer object and write the
         // vertices into it (ID and bind statuses are asserted).
 
@@ -133,20 +141,12 @@ struct Quad::Data
                      &indexData[0],
                      GL_STATIC_DRAW);
 
-        // -----------------------------------------------------------
-        // Create vertex array object and set the vertex attributes
-        // (position and color) definitions. The attributes will be
-        // remembered when the object is bind (note that buffer
-        // objects are still bound into OpenGL context).
-
-        glGenVertexArrays(1, &vao);
-        if (vao == 0)
-            std::cerr << "Failed to generate VAO" << std::endl;
-
-        glBindVertexArray(vao);
         glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current);
         if (current != vao)
             std::cerr << "Failed to bind VAO" << std::endl;
+
+        // -----------------------------------------------------------
+        // Set vertex attributes (this will be stored into VAO)
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(
@@ -159,15 +159,16 @@ struct Quad::Data
             6 * sizeof(float),
             (const GLvoid*) (3 * sizeof(float)));
 
+        // Release VAO and buffers (notice order)
+        glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
 
         // -----------------------------------------------------------
         // Create the vertex shader
 
         const std::string vshSource =
-            "#version 330 core \n" // note linebreak
+            "#version 330 core\r\n" // note linebreak
             "layout (location = 0) in vec3 position;"
             "layout (location = 1) in vec3 color;"
             "uniform mat4 cameraMatrix;"
@@ -200,7 +201,7 @@ struct Quad::Data
         // Create the fragment shader.
 
         const std::string fshSource =
-            "#version 330 core \n" // note linebreak
+            "#version 330 core\r\n" // note linebreak
             "in vec4 colorIn;"
             "out vec4 colorOut;"
             "void main(void)"
@@ -299,8 +300,6 @@ void Quad::render(const glm::mat4& view,
 {
     // Bind the buffers.
     glBindVertexArray(d->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, d->vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, d->ibo);
 
     // Bind and validate the shader program.
     glUseProgram(d->pgm);
@@ -333,8 +332,6 @@ void Quad::render(const glm::mat4& view,
 
     // Release the binded state
     glUseProgram(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
