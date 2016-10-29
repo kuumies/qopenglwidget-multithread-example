@@ -56,7 +56,9 @@ set(SOURCE
     src/main.cpp
     src/opengl.h
     src/opengl_quad.cpp
+    src/opengl_mesh.cpp
     src/opengl_rendering_thread.cpp
+    src/opengl_shader.cpp
     src/opengl_viewport_target.cpp
     src/opengl_widget.cpp
 )

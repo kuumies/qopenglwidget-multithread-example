@@ -7,7 +7,6 @@
 
 #include "opengl.h"
 #include <memory>
-#include <glm/mat4x4.hpp>
 
 namespace kuu
 {

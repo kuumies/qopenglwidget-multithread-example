@@ -11,35 +11,13 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "opengl.h"
+#include "opengl_mesh.h"
+#include "opengl_shader.h"
 
 namespace kuu
 {
 namespace opengl
 {
-
-namespace
-{
-
-/* ---------------------------------------------------------------- *
-   Returns the OpenGL shader info log 
- * ---------------------------------------------------------------- */
-std::string shaderInfoLog(GLint id)
-{
-    GLint length = 0;
-    glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-
-    if (length <= 0)
-        return std::string();
-
-    std::string log;
-    log.resize(length + 1);
-    glGetShaderInfoLog(id, length, NULL, (GLchar*)log.c_str());
-
-    log.erase(std::remove(log.begin(), log.end(), '\0'), log.end());
-    return log;
-}
-    
-} // anonymous namespace
 
 /* ---------------------------------------------------------------- *
    The data of the quad.
@@ -51,10 +29,6 @@ struct Quad::Data
         : width(width)
         , height(height)
     { createQuad(); }
-
-    // Destroys the quad data
-    ~Data()
-    { destroyQuad(); }
 
     // Creates the quad. This will create a vertex buffer with two
     // triangles where a single vertex contains position and color.
@@ -97,75 +71,15 @@ struct Quad::Data
             2u, 3u, 0u
         };
 
-        // -----------------------------------------------------------
-        // Create vertex array object.
-
-        glGenVertexArrays(1, &vao);
-        if (vao == 0)
-            std::cerr << "Failed to generate VAO" << std::endl;
-        glBindVertexArray(vao);
-
-        // -----------------------------------------------------------
-        // Create the OpenGL vertex buffer object and write the
-        // vertices into it (ID and bind statuses are asserted).
-
-        glGenBuffers(1, &vbo);
-        if (vbo == 0)
-            std::cerr << "Failed to generate VBO" << std::endl;
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        GLint current = 0;
-        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &current);
-        if (current != vbo)
-            std::cerr << "Failed to bind VBO" << std::endl;
-
-        glBufferData(GL_ARRAY_BUFFER,
-                     vertexData.size() * sizeof(float),
-                     &vertexData[0],
-                     GL_STATIC_DRAW);
+        mesh = std::make_shared<Mesh>();
+        mesh->writeVertexData(vertexData);
+        mesh->writeIndexData(indexData);
+        mesh->setAttributeDefinition(0, 3, 6 * sizeof(float), 0);
+        mesh->setAttributeDefinition(1, 3, 6 * sizeof(float),
+                                     3 * sizeof(float));
 
         // -----------------------------------------------------------
-        // Create index buffer object and writes the indices into it.
-
-        glGenBuffers(1, &ibo);
-        if (ibo == 0)
-            std::cerr << "Failed to generate IBO" << std::endl;
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &current);
-        if (current != ibo)
-            std::cerr << "Failed to bind IBO" << std::endl;
-
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                     indexData.size() * sizeof(unsigned int),
-                     &indexData[0],
-                     GL_STATIC_DRAW);
-
-        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current);
-        if (current != vao)
-            std::cerr << "Failed to bind VAO" << std::endl;
-
-        // -----------------------------------------------------------
-        // Set vertex attributes (this will be stored into VAO)
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(
-            0, 3, GL_FLOAT, GL_FALSE,
-            6 * sizeof(float), (const GLvoid*) 0);
-
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(
-            1, 3, GL_FLOAT, GL_FALSE,
-            6 * sizeof(float),
-            (const GLvoid*) (3 * sizeof(float)));
-
-        // Release VAO and buffers (notice order)
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-        // -----------------------------------------------------------
-        // Create the vertex shader
+        // Create the shader
 
         const std::string vshSource =
             "#version 330 core\r\n" // note linebreak
@@ -179,27 +93,6 @@ struct Quad::Data
                 "colorIn = vec4(color, 1.0);"
             "}";
 
-        vsh = glCreateShader(GL_VERTEX_SHADER);
-        if (vsh == 0)
-            std::cerr << "Failed to create vertex shader"
-                      << std::endl;
-
-        const char* vshPtr = vshSource.c_str();
-        glShaderSource(vsh, 1, &vshPtr, 0);
-
-        glCompileShader(vsh);
-        GLint status = 0;
-        glGetShaderiv(vsh, GL_COMPILE_STATUS, &status);
-        if (status != GL_TRUE)
-        {
-            std::cerr << "Failed to compile vertex shader"
-                      << std::endl;
-            std::cerr << shaderInfoLog(vsh) << std::endl;
-        }
-
-        // -----------------------------------------------------------
-        // Create the fragment shader.
-
         const std::string fshSource =
             "#version 330 core\r\n" // note linebreak
             "in vec4 colorIn;"
@@ -209,66 +102,19 @@ struct Quad::Data
                 "colorOut = colorIn;"
             "}";
 
-        fsh = glCreateShader(GL_FRAGMENT_SHADER);
-        if (fsh == 0)
-        {
-            std::cerr << "Failed to create fragment shader"
-                      << std::endl;
-            std::cerr << shaderInfoLog(fsh) << std::endl;
-        }
-
-        const char* fshPtr = fshSource.c_str();
-        glShaderSource(fsh, 1, &fshPtr, 0);
-
-        glCompileShader(fsh);
-        glGetShaderiv(fsh, GL_COMPILE_STATUS, &status);
-        if (status != GL_TRUE)
-            std::cerr << "Failed to compile fragment shader"
-                      << std::endl;
-
-        // -----------------------------------------------------------
-        // Create the OpenGL shader program.
-
-        pgm = glCreateProgram();
-        if (pgm == 0)
-            std::cerr << "Failed to create shader program"
-                      << std::endl;
-
-        glAttachShader(pgm, vsh);
-        glAttachShader(pgm, fsh);
-
-        glLinkProgram(pgm);
-        glGetProgramiv(pgm, GL_LINK_STATUS, &status);
-        if (status != GL_TRUE)
-            std::cerr << "Failed to ling shader program"
-                      << std::endl;
-    }
-
-    // Destroys the quad. OpenGL resources are freed.
-    void destroyQuad()
-    {
-        // Destroy vertex and index buffers
-        glDeleteBuffers(1, &ibo);
-        glDeleteBuffers(1, &vbo);
-        // Destroy vertex array
-        glDeleteVertexArrays(1, &vao);
-        // Destroy shader
-        glDeleteShader(vsh);
-        glDeleteShader(fsh);
-        glDeleteProgram(pgm);
+        shader = std::make_shared<Shader>();
+        shader->setVertexShader(vshSource);
+        shader->setFragmentShader(fshSource);
+        shader->link();
     }
 
     float width  = 1.0f; // width of the quad
     float height = 1.0f; // height of the quad
 
-    GLuint vbo = 0; // vertex buffer object name
-    GLuint ibo = 0; // index buffer object name
-    GLuint vao = 0; // vertex array object name
-    GLuint vsh = 0; // vertex shader name
-    GLuint fsh = 0; // fragment shader name
-    GLuint pgm = 0; // shader program name
-
     glm::quat yaw; // rotation around y-axis
+
+    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<Shader> shader;
 };
 
 /* ---------------------------------------------------------------- *
@@ -298,41 +144,16 @@ void Quad::update(float elapsed)
 void Quad::render(const glm::mat4& view,
                   const glm::mat4& projection)
 {
-    // Bind the buffers.
-    glBindVertexArray(d->vao);
-
-    // Bind and validate the shader program.
-    glUseProgram(d->pgm);
-
-    glValidateProgram(d->pgm);
-    GLint status = 0;
-    glGetProgramiv(d->pgm, GL_VALIDATE_STATUS, &status);
-    if (status != GL_TRUE)
-        std::cout << "Shader program is not valid" << std::endl;
-
     // Creates the transform from model space into world space
-    glm::mat4 model;
-    model = glm::mat4_cast(d->yaw);
+    const glm::mat4 model = glm::mat4_cast(d->yaw);
+    const glm::mat4 cameraMatrix = projection * view * model;
 
-    // Set the camera matrix
-    const glm::mat4 camera = projection * view * model;
-    const int uniformLocation =
-        glGetUniformLocation(d->pgm, "cameraMatrix");
-    if (uniformLocation == -1)
-    {
-        std::cerr << "Failed to find cameraMatrix uniform location."
-                  << std::endl;
-        return;
-    }
-    glUniformMatrix4fv(uniformLocation, 1, GL_FALSE,
-                       glm::value_ptr(camera));
-
-    // Draw the two triangles
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    // Release the binded state
-    glUseProgram(0);
-    glBindVertexArray(0);
+    d->mesh->bind();
+    d->shader->bind();
+    d->shader->setUniform("cameraMatrix", cameraMatrix);
+    d->mesh->render(GL_TRIANGLES);
+    d->shader->release();
+    d->mesh->release();
 }
 
 } // namespace opengl
