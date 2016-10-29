@@ -46,8 +46,6 @@ include_directories(${GLM_INCLUDE_DIR})
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 qt5_wrap_cpp(MOC_SOURCE
-    src/opengl_renderer_object.h
-    src/opengl_widget.h
 )
 
 qt5_add_resources(RCC_RESOURCES
@@ -58,7 +56,8 @@ set(SOURCE
     src/main.cpp
     src/opengl.h
     src/opengl_quad.cpp
-    src/opengl_renderer_object.cpp
+    src/opengl_rendering_thread.cpp
+    src/opengl_viewport_target.cpp
     src/opengl_widget.cpp
 )
 

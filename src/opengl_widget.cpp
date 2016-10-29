@@ -4,9 +4,14 @@
  * ---------------------------------------------------------------- */
 
 #include "opengl_widget.h"
+#include "opengl.h"
+#include <QtCore/QDebug>
 #include <QtCore/QThread>
+#include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLContext>
-#include "opengl_renderer_object.h"
+#include <QtGui/QOpenGLFramebufferObject>
+#include "opengl_rendering_thread.h"
+#include "opengl_viewport_target.h"
 
 namespace kuu
 {
@@ -18,8 +23,11 @@ namespace opengl
  * ---------------------------------------------------------------- */
 struct Widget::Data
 {
-    RendererObject::Ptr renderer;
-    std::shared_ptr<QThread> thread;
+    // Thread that does the triangle rendering.
+    RenderingThread::Ptr renderingThread;
+    // Viewport that draws the framebuffer rendered in
+    // rendering thread.
+    ViewportTarget::Ptr viewportTarget;
 };
 
 /* ---------------------------------------------------------------- *
@@ -27,39 +35,18 @@ struct Widget::Data
  * -----------------------------------------------------------------*/
 Widget::Widget()
     : d(std::make_shared<Data>())
-{
-    connect(this, &QOpenGLWidget::aboutToCompose,
-            this, &Widget::onWidgetAboutToCompose);
-
-    connect(this, &QOpenGLWidget::frameSwapped,
-            this, &Widget::onWidgetFrameSwapped);
-
-    connect(this, &QOpenGLWidget::aboutToResize,
-            this, &Widget::onWidgetAboutToResize);
-
-    connect(this, &QOpenGLWidget::resized,
-            this, &Widget::onWidgetResized);
-}
+{}
 
 /* ---------------------------------------------------------------- *
    Starts the rendering thread.
  * -----------------------------------------------------------------*/
 void Widget::startThread()
 {
-    if (d->thread)
-        stopThread();
-    d->thread = std::make_shared<QThread>();
-
-    d->renderer = std::make_shared<RendererObject>(shared_from_this());
-    d->renderer->moveToThread(d->thread.get());
-
-    connect(this,              &Widget::renderRequest,
-            d->renderer.get(), &RendererObject::render);
-
-    connect(d->renderer.get(), &RendererObject::requestContext,
-            this,              &Widget::onRendererRequestContext);
-
-    d->thread->start();
+    if (d->renderingThread)
+        return;
+    d->renderingThread = std::make_shared<RenderingThread>(this, size());
+    d->renderingThread->moveToThread(d->renderingThread.get());
+    d->renderingThread->start();
 }
 
 /* ---------------------------------------------------------------- *
@@ -67,81 +54,38 @@ void Widget::startThread()
  * -----------------------------------------------------------------*/
 void Widget::stopThread()
 {
-    if (!d->thread)
+    if (!d->renderingThread)
         return;
 
-    d->renderer->stop();
-    if (d->thread->isRunning())
+    if (d->renderingThread->isRunning())
     {
-        d->thread->quit();
-        d->thread->wait();
+        d->renderingThread->stop();
+        d->renderingThread->quit();
+        d->renderingThread->wait();
     }
-    d->thread.reset();
-
-    d->renderer.reset();
+    d->renderingThread.reset();
 }
 
-/* ---------------------------------------------------------------- *
-   QOpenGLWidget is starting the framebuffer composition. During
-   this time the thread must not make the OpenGL context current
-   from it's thread untill the framebuffer is swapped (see
-   onWidgetFrameSwapped() function.
- * -----------------------------------------------------------------*/
-void Widget::onWidgetAboutToCompose()
+void Widget::paintGL()
 {
-    if (d->renderer)
-        d->renderer->lockRenderer();
-}
+    // Wait till the rendering thread is created.
+    if (!d->renderingThread)
+        return;
 
-/* ---------------------------------------------------------------- *
-   QOpenGLWidget has swapped the framebuffers, the rendering thread
-   can access the OpenGL context once again.
- * -----------------------------------------------------------------*/
-void Widget::onWidgetFrameSwapped()
-{
-    if (d->renderer)
-    {
-        d->renderer->unlockRenderer();
-        emit renderRequest();
-    }
-}
+    // Create the viewport target if not done already
+    if (!d->viewportTarget)
+        d->viewportTarget = std::make_shared<ViewportTarget>();
 
-/* ---------------------------------------------------------------- *
-   Stop the rendering when user starts to resize the widget. This
-   seems to block the rendering for maybe too long...
- * -----------------------------------------------------------------*/
-void Widget::onWidgetAboutToResize()
-{
-    if (d->renderer)
-        d->renderer->lockRenderer();
-}
+    // Get the framebuffer texture from the rendering thread.
+    d->renderingThread->lock();
+    const GLuint textureId = d->renderingThread->framebufferTex();
 
-/* ---------------------------------------------------------------- *
-   Restart the rendering when user has finished resizing the widget.
- * -----------------------------------------------------------------*/
-void Widget::onWidgetResized()
-{
-    if (d->renderer)
-        d->renderer->unlockRenderer();
-}
+    // Draw the framebuffer texture.
+    d->viewportTarget->render(textureId);
 
-/* ---------------------------------------------------------------- *
-   Move the OpenGL context into renderer thread.
- * -----------------------------------------------------------------*/
-void Widget::onRendererRequestContext()
-{
-    d->renderer->lockRenderer();
-    QMutexLocker lock(d->renderer->requestWaitMutex());
-    context()->moveToThread(d->thread.get());
-    d->renderer->requestWaitCondition()->wakeAll();
-    d->renderer->unlockRenderer();
+    // Release the rendering.
+    d->renderingThread->unlock();
 }
-
-/* ---------------------------------------------------------------- *
-   Paint event needs to be overridden for rendering to work.
- * -----------------------------------------------------------------*/
-void Widget::paintEvent(QPaintEvent* /*e*/)
-{}
 
 /* ---------------------------------------------------------------- *
    Stop the thread during exit.
