@@ -1,9 +1,9 @@
 # qopenglwidget-multithread-example
 A QOpenGLWidget OpenGL multithread example
 
-This is a simple example how to render into QOpenGLWidget's surface from non-UI thread. The rendering result is a basic rotating quad mesh where the shading is done with vertex colors. The example uses OpenGL 3.3 pipeline for rendering. The rendering is done using native OpenGL API, not with Qt OpenGL classes. The matrix and quaternion math is done with GLM library.
+This example renders a framebuffer into QOpenGLWidget surface. The framebuffer is constantly updated in a non-UI thread. The rendering result is a basic rotating quad mesh where the shading is done with vertex colors. The example uses OpenGL 3.3 pipeline for rendering. The rendering is done using native OpenGL API, not with Qt OpenGL classes. The matrix and quaternion math is done with GLM library.
 
-Example is based on 'Threaded QOpenGLWidget' example that can be found from the Qt SDK examples.
+Example is based on 'Threaded QOpenGLWidget' and 'Texture in Thread' examples that can be found from the Qt SDK examples.
 
 ![Example](screenshot.gif?raw=true "Example")
 
@@ -36,6 +36,6 @@ Tested with:
 ```
 OS X Yosemite 10.10.5
 Clang 64 bit 600.0.51
-Qt 5.5.1
+Qt 5.7.0
 Cmake 3.4.1
 ```
