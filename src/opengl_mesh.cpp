@@ -143,7 +143,11 @@ void Mesh::writeVertexData(int byteSize,
 
 void Mesh::readVertexData(int byteCount, void* data)
 {
+    glBindBuffer(GL_ARRAY_BUFFER, d->vbo);
+    if (!isVertexBufferCurrent(d->vbo))
+        std::cerr << "Failed to bind VBO" << std::endl;
     glGetBufferSubData(GL_ARRAY_BUFFER, 0, byteCount, data);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 /* ---------------------------------------------------------------- */
@@ -174,7 +178,11 @@ void Mesh::writeIndexData(int byteSize,
 
 void Mesh::readIndexData(int byteCount, void* data)
 {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, d->ibo);
+    if (!isIndexBufferCurrent(d->ibo))
+        std::cerr << "Failed to bind IBO" << std::endl;
     glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, byteCount, data);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 /* ---------------------------------------------------------------- */
