@@ -1,7 +1,8 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Includes OpenGL header that allows usage of OpenGL 3.0.
- * ---------------------------------------------------------------- */
+/**
+    @file   opengl.h
+    @author kuumies <kuumies@gmail.com>
+    @brief  Includes OpenGL header that allows usage of OpenGL 3.0.
+ **/
 
 #pragma once
 

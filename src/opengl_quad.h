@@ -1,7 +1,8 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Definition of kuu::opengl::Quad class.
- * ---------------------------------------------------------------- */
+/**
+    @file   opengl_quad.h
+    @author kuumies <kuumies@gmail.com>
+    @brief  Definition of kuu::opengl::Quad class.
+ **/
 
 #pragma once
 
@@ -13,16 +14,16 @@ namespace kuu
 namespace opengl
 {
 
-/* ---------------------------------------------------------------- *
-   A quad mesh.
+/**
+    A quad mesh.
 
-   The mesh is built so that the center of the quad is at the origo.
-   Rendering is done with GLSL 3.3 core version. The OpenGL context
-   must be valid when the Quad instance is constructed. If the con-
-   struction fails then all the errors are printed into standard er-
-   ror stream.
+    The mesh is built so that the center of the quad is at the origo.
+    Rendering is done with GLSL 3.3 core version. The OpenGL context
+    must be valid when the Quad instance is constructed. If the con-
+    struction fails then all the errors are printed into standard er-
+    ror stream.
 
-   Example:
+    @code
 
     // Create quad
     Quad::Ptr quad = std::make_shared<Quad>(3.0f, 4.0f);
@@ -35,20 +36,37 @@ namespace opengl
     glm::mat4 cameraProjectionMatrix = getCameraProjectionMatrix();
     quad.render(cameraViewMatrix, cameraProjectionMatrix);
 
- * ---------------------------------------------------------------- */
+    @endcode
+
+ **/
 class Quad
 {
 public:
-    // Defines a shared pointer of quad.
-    using Ptr = std::shared_ptr<Quad>;
-
-    // Constructs the quad. OpenGL context must be valid.
+    /**
+        Constructs the quad from the width and height dimensions.
+        @param width  The width of the quad.
+        @param height The height of the quad.
+     **/
     Quad(float width = 1.0f, float height = 1.0f);
 
-    // Updates the quad rotation.
+    /**
+        Updates the quad rotation around Y-axis.
+        @param elapsed Time in milliseconds since the function was
+                       called last time.
+     **/
     void update(float elapsed);
 
-    // Renders the quad
+    /**
+        Renders the quad.
+
+        The input view and projection matrics are used to transform
+        the vertices from world space into camera clipping space.
+
+        @param view       The view matrix that transforms vertex from
+                          world space into view space.
+        @param projection The projection matrix that transforms vertex
+                          from view space into clipped camera space.
+     **/
     void render(const glm::mat4& view,
                 const glm::mat4& projection);
 

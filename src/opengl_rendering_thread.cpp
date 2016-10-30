@@ -1,13 +1,14 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Implementation of kuu::opengl::RenderingThread class.
- * ---------------------------------------------------------------- */
+/**
+    @file   opengl_rendering_thread.cpp
+    @author kuumies <kuumies@gmail.com>
+    @brief  Implementation of kuu::opengl::RenderingThread class.
+ **/
 
 #include "opengl_rendering_thread.h"
+#include "elapsed_timer.h"
 #include "opengl_quad.h"
 #include "opengl_widget.h"
 
-#include <chrono>
 #include <iostream>
 #include <glm/gtx/transform.hpp>
 #include <QtGui/QOffscreenSurface>
@@ -19,42 +20,8 @@ namespace kuu
 namespace opengl
 {
 
-/* ---------------------------------------------------------------- *
-   A simple timer for getting the elapsed time in milliseconds.
- * ---------------------------------------------------------------- */
-class ElapsedTimer
-{
-public:
-    // Shorthand aliases of clock
-    using Clock = std::chrono::steady_clock;
-    using ClockTimePoint = Clock::time_point;
+/* ---------------------------------------------------------------- */
 
-    // Constructs the elapsed timer
-    ElapsedTimer()
-    {
-        prevTime_ = Clock::now();
-    }
-
-    // Returns the elapsed time in milliseconds since the function
-    // was previously called.
-    int elapsed()
-    {
-
-        ClockTimePoint currentTime = Clock::now();
-        auto diffTime = currentTime - prevTime_;
-        prevTime_ = currentTime;
-
-        using namespace std::chrono;
-        return duration_cast<milliseconds>(diffTime).count();
-    }
-
-private:
-    ClockTimePoint prevTime_; // previous sampling time
-};
-
-/* ---------------------------------------------------------------- *
-   The data of the renderer object.
- * ---------------------------------------------------------------- */
 struct RenderingThread::Data
 {
     Data(Widget* widget, const QSize& framebufferSize)
@@ -80,7 +47,7 @@ struct RenderingThread::Data
     // Timer for rotating the quad.
     ElapsedTimer timer;
     // Quad mesh
-    Quad::Ptr quad;
+    std::shared_ptr<Quad> quad;
 
     // Framebuffer texture ID for the UI thread.
     GLuint tex = 0;
@@ -90,10 +57,8 @@ struct RenderingThread::Data
     std::shared_ptr<QOpenGLFramebufferObject> displayFbo;
 };
 
-/* ---------------------------------------------------------------- *
-   Initialize OpenGL. This will create a quad mesh and the
-   framebuffers for double-buffering.
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void initialize(std::shared_ptr<RenderingThread::Data> d)
 {
     // Initialize OpenGL if needed.
@@ -131,9 +96,7 @@ void initialize(std::shared_ptr<RenderingThread::Data> d)
     d->initialized = true;
 }
 
-/* ---------------------------------------------------------------- *
-   Renders a frame
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
 
 void renderFrame(std::shared_ptr<RenderingThread::Data> d)
 {
@@ -179,12 +142,10 @@ void renderFrame(std::shared_ptr<RenderingThread::Data> d)
     std::swap(d->renderFbo, d->displayFbo);
 }
 
-/* ---------------------------------------------------------------- *
-   Constructs the renderer object.
- * -----------------------------------------------------------------*/
-RenderingThread::RenderingThread(Widget* widget,
-                                 const QSize& framebufferSize)
-    : d(std::make_shared<Data>(widget, framebufferSize))
+/* ---------------------------------------------------------------- */
+
+RenderingThread::RenderingThread(Widget* widget)
+    : d(std::make_shared<Data>(widget, widget->size()))
 {
     d->context = std::make_shared<QOpenGLContext>();
     d->context->setShareContext(widget->context());
@@ -198,9 +159,8 @@ RenderingThread::RenderingThread(Widget* widget,
     d->surface->moveToThread(this);
 }
 
-/* ---------------------------------------------------------------- *
-   Stops the rendering
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void RenderingThread::stop()
 {
     d->mutex.lock();
@@ -208,33 +168,29 @@ void RenderingThread::stop()
     d->mutex.unlock();
 }
 
-/* ---------------------------------------------------------------- *
-   Locks the rendering mutex
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void RenderingThread::lock()
 {
     d->mutex.lock();
 }
 
-/* ---------------------------------------------------------------- *
-   Unlocks the rendering mutex
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void RenderingThread::unlock()
 {
     d->mutex.unlock();
 }
 
-/* ---------------------------------------------------------------- *
-   Returns the current framebuffer texture ID.
- * -----------------------------------------------------------------*/
-GLuint RenderingThread::framebufferTex() const
+/* ---------------------------------------------------------------- */
+
+GLuint RenderingThread::framebufferTexture() const
 {
     return d->tex;
 }
 
-/* ---------------------------------------------------------------- *
-   Renderers a frame.
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void RenderingThread::run()
 {
     for(;;)

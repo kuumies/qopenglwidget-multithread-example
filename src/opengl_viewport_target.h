@@ -1,7 +1,9 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Definition of kuu::opengl::ViewportTarget class.
- * ---------------------------------------------------------------- */
+/**
+    @file   opengl_viewport_target.h
+    @author kuumies <kuumies@gmail.com>
+    @brief  Definition of kuu::opengl::ViewportTarget class.
+ **/
+
 
 #pragma once
 
@@ -13,19 +15,24 @@ namespace kuu
 namespace opengl
 {
 
-/* ---------------------------------------------------------------- *
-   A viewport target. This renders framebuffer texture into viewport.
- * ---------------------------------------------------------------- */
+/**
+    A viewport target.
+
+    This renders framebuffer texture into viewport.
+ **/
 class ViewportTarget
 {
 public:
-    // Defines a shared pointer of quad.
-    using Ptr = std::shared_ptr<ViewportTarget>;
-
-    // Constructs the viewport target. OpenGL context must be valid.
+    /**
+        Constructs the viewport target.
+        @note OpenGL context must be valid.
+     **/
     ViewportTarget();
 
-    // Renders the framebuffer texture into viewport.
+    /**
+        Renders the framebuffer texture into viewport.
+        @param textureId The framebuffer texture.
+     **/
     void render(GLuint textureId);
 
 private:

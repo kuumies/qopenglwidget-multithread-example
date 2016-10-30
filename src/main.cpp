@@ -1,8 +1,8 @@
-/* -----------------------------------------------------------------*
-    Author: Kuumies <kuumies@gmail.com>
-    Desc:   Definition of GOpenGLWidget multithread example 
-            main entry.
- * -----------------------------------------------------------------*/
+/**
+    @file   main.cpp
+    @author kuumies <kuumies@gmail.com>
+    @brief  QOpenGLWidget multithread example main entry.
+ **/
 
 #include "src/opengl_widget.h"
 #include <iostream>
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         desktop->height() / 2 - size.height() / 2);
 
     // Create the OpenGL widget
-    Widget::Ptr widget = std::make_shared<Widget>();
+    std::shared_ptr<Widget> widget = std::make_shared<Widget>();
     widget->setWindowIcon(QIcon("://icons/application_icon.png"));
     widget->resize(size);
     widget->move(position);

@@ -1,7 +1,8 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Implementation of kuu::opengl::Mesh class.
- */
+/**
+    @file   opengl_mesh.cpp
+    @author kuumies <kuumies@gmail.com>
+    @brief  Implementation of kuu::opengl::Mesh class.
+ **/
 
 #include "opengl_mesh.h"
 #include <iostream>
@@ -17,7 +18,7 @@ namespace
 /* ---------------------------------------------------------------- *
    Returns true if the given in vertex array object is currently
    bound into OpenGL context.
- */
+ * ---------------------------------------------------------------- */
 bool isVertexArrayCurrent(GLuint vao)
 {
     GLint current = 0;
@@ -28,7 +29,7 @@ bool isVertexArrayCurrent(GLuint vao)
 /* ---------------------------------------------------------------- *
    Returns true if the given in vertex buffer object is currently
    bound into OpenGL context.
- */
+ * ---------------------------------------------------------------- */
 bool isVertexBufferCurrent(GLuint vbo)
 {
     GLint current = 0;
@@ -39,7 +40,7 @@ bool isVertexBufferCurrent(GLuint vbo)
 /* ---------------------------------------------------------------- *
    Returns true if the given in index buffer object is currently
    bound into OpenGL context.
- */
+ * ---------------------------------------------------------------- */
 bool isIndexBufferCurrent(GLuint ibo)
 {
     GLint current = 0;
@@ -51,7 +52,7 @@ bool isIndexBufferCurrent(GLuint ibo)
 
 /* ---------------------------------------------------------------- *
    The data of the mesh.
- */
+ * ---------------------------------------------------------------- */
 struct Mesh::Data
 {
     // Constructs the mesh data.
@@ -107,16 +108,12 @@ Mesh::Mesh()
 /* ---------------------------------------------------------------- */
 
 int Mesh::vertexCount() const
-{
-    return d->vertexCount;
-}
+{ return d->vertexCount; }
 
 /* ---------------------------------------------------------------- */
 
 int Mesh::indexCount() const
-{
-    return d->indexCount;
-}
+{ return d->indexCount; }
 
 /* ---------------------------------------------------------------- */
 
@@ -172,6 +169,8 @@ void Mesh::writeIndexData(int byteSize,
     glBindVertexArray(0); // VAO before IBO!
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+
+/* ---------------------------------------------------------------- */
 
 void Mesh::readIndexData(int byteCount, void* data)
 {

@@ -1,7 +1,8 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Implmentation of kuu::opengl::Quad class.
- * ---------------------------------------------------------------- */
+/**
+    @file   opengl_quad.cpp
+    @author kuumies <kuumies@gmail.com>
+    @brief  Implementation of kuu::opengl::Quad class.
+ **/
 
 #include "opengl_quad.h"
 #include <algorithm>
@@ -117,16 +118,14 @@ struct Quad::Data
     std::shared_ptr<Shader> shader;
 };
 
-/* ---------------------------------------------------------------- *
-   Constructs the quad from the width and height dimensions.
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 Quad::Quad(float width, float height)
     : d(std::make_shared<Data>(width, height))
 {}
 
-/* ---------------------------------------------------------------- *
-   Updates the quad rotation around Y-axis
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void Quad::update(float elapsed)
 {
     const float angleChangePerMillisecond = 180.0f/1000.0f;
@@ -136,11 +135,8 @@ void Quad::update(float elapsed)
                     glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-/* ---------------------------------------------------------------- *
-   Renders the quad. The input view and projection matrics are
-   used to transform the vertices from world space into camera
-   clipping space.
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void Quad::render(const glm::mat4& view,
                   const glm::mat4& projection)
 {

@@ -1,7 +1,8 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Implementation of kuu::opengl::Shader class.
- */
+/**
+    @file   opengl_shader.cpp
+    @author kuumies <kuumies@gmail.com>
+    @brief  Implementation of kuu::opengl::Shader class.
+ **/
 
 #include "opengl_shader.h"
 #include "opengl.h"
@@ -19,7 +20,7 @@ namespace
 
 /* ---------------------------------------------------------------- *
    Returns the OpenGL shader info log
- */
+ * ---------------------------------------------------------------- */
 std::string shaderInfoLog(GLint id)
 {
     GLint length = 0;
@@ -38,7 +39,7 @@ std::string shaderInfoLog(GLint id)
 
 /* ---------------------------------------------------------------- *
    Returns true if the shader is compiled.
- */
+ * ---------------------------------------------------------------- */
 bool isShaderCompiled(GLuint shaderId)
 {
     GLint status = 0;
@@ -48,7 +49,7 @@ bool isShaderCompiled(GLuint shaderId)
 
 /* ---------------------------------------------------------------- *
    Returns uniform location or -1 if the uniform was not found.
- */
+ * ---------------------------------------------------------------- */
 int uniformLocation(
     GLuint pgm,
     const std::string& uniform)
@@ -65,7 +66,7 @@ int uniformLocation(
 
 /* ---------------------------------------------------------------- *
    The data of the shader.
- */
+ * ---------------------------------------------------------------- */
 struct Shader::Data
 {
     // Constructs the shader data.

@@ -53,6 +53,7 @@ qt5_add_resources(RCC_RESOURCES
 )
 
 set(SOURCE
+    src/elapsed_timer.cpp
     src/main.cpp
     src/opengl.h
     src/opengl_quad.cpp

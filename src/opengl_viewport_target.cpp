@@ -1,15 +1,11 @@
-/* ---------------------------------------------------------------- *
-   Author: Kuumies <kuumies@gmail.com>
-   Desc:   Implmentation of kuu::opengl::ViewportTarget class.
- * ---------------------------------------------------------------- */
+/**
+    @file   opengl_viewport_target.cpp
+    @author kuumies <kuumies@gmail.com>
+    @brief  Implementation of kuu::opengl::ViewportTarget class.
+ **/
 
 #include "opengl_viewport_target.h"
-#include <algorithm>
 #include <iostream>
-#include <string>
-#include <vector>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include "opengl_mesh.h"
 #include "opengl_shader.h"
 
@@ -17,30 +13,6 @@ namespace kuu
 {
 namespace opengl
 {
-
-namespace
-{
-
-/* ---------------------------------------------------------------- *
-   Returns the OpenGL shader info log 
- * ---------------------------------------------------------------- */
-std::string shaderInfoLog(GLint id)
-{
-    GLint length = 0;
-    glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-
-    if (length <= 0)
-        return std::string();
-
-    std::string log;
-    log.resize(length + 1);
-    glGetShaderInfoLog(id, length, NULL, (GLchar*)log.c_str());
-
-    log.erase(std::remove(log.begin(), log.end(), '\0'), log.end());
-    return log;
-}
-    
-} // anonymous namespace
 
 /* ---------------------------------------------------------------- *
    The data of the viewport target.
@@ -112,16 +84,14 @@ struct ViewportTarget::Data
     std::shared_ptr<Shader> shader;
 };
 
-/* ---------------------------------------------------------------- *
-   Constructs the viewport target.
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 ViewportTarget::ViewportTarget()
     : d(std::make_shared<Data>())
 {}
 
-/* ---------------------------------------------------------------- *
-   Renders the viewport target.
- * -----------------------------------------------------------------*/
+/* ---------------------------------------------------------------- */
+
 void ViewportTarget::render(GLuint textureId)
 {
     glActiveTexture(GL_TEXTURE0);
